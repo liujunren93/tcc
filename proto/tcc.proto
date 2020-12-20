@@ -1,5 +1,5 @@
 syntax = "proto3";
-package proto;
+package tcc;
 option go_package = "github.com/liujunren93/tcc/proto;proto";
 
 
