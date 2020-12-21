@@ -15,4 +15,5 @@ type Endpoint struct {
 	EndpointServerName string `gorm:"endpoint_server_name;type:varchar(255);not null;default:'';comment:'服务名'"`
 	EndpointTxID       uint   `gorm:"endpoint_tx_id;type:int;not null;default:0;comment:'分支事务ID'"`
 	ParamData          string `gorm:"param_data;type:varchar(4000);not null;default:'';comment:'一阶段方法参数数据'"`
+	Status             int    `gorm:"status;type:int;not null;default:0;comment:"0:待处理，1：成功,2:失败'"`
 }

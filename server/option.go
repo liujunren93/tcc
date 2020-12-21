@@ -6,8 +6,9 @@ import (
 )
 
 type options struct {
-	DB     *gorm.DB
-	server *grpc.Server
+	DB         *gorm.DB
+	server     *grpc.Server
+	ClientName string
 }
 
 func WithDB(db *gorm.DB) option {
@@ -19,5 +20,11 @@ func WithDB(db *gorm.DB) option {
 func WithServer(server *grpc.Server) option {
 	return func(o *options) {
 		o.server = server
+	}
+}
+
+func WithClientName(ClientName string) option {
+	return func(o *options) {
+		o.ClientName = ClientName
 	}
 }
