@@ -11,21 +11,21 @@ type transactionManage struct {
 
 type option func(*options)
 
-func NewTransaction(opts ...option) *transactionManage {
+func NewTransaction(opts ...option) (*transactionManage,error) {
 	var defaultManage transactionManage
 	for _, opt := range opts {
 		opt(&defaultManage.option)
 	}
-	initMigrate(defaultManage.option.DB)
-	return &defaultManage
+	err := initMigrate(defaultManage.option.DB)
+	return &defaultManage,err
 }
 
-func initMigrate(db *gorm.DB) {
+func initMigrate(db *gorm.DB)error {
 	models := []interface{}{
 		&model.Endpoint{},
 		&model.Transaction{},
 	}
-	db.AutoMigrate(models)
+	return db.AutoMigrate(models...)
 }
 
 //Registry 注册事务获取事务id
