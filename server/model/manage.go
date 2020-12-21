@@ -13,6 +13,6 @@ type Endpoint struct {
 	gorm.Model
 	TxID               uint   `gorm:"tx_id;type:int;not null;default:0;comment:'主事务id'"`
 	EndpointServerName string `gorm:"endpoint_server_name;type:varchar(255);not null;default:'';comment:'服务名'"`
-	EndpointTxID       uint   `gorm:"endpoint_tx_id;type:;not null;default:'';comment:'分支事务ID'"`
+	EndpointTxID       uint   `gorm:"endpoint_tx_id;type:int;not null;default:'';comment:'分支事务ID'"`
 	ParamData          string `gorm:"param_data;type:varchar(4000);not null;default:'';comment:'一阶段方法参数数据'"`
 }
