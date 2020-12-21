@@ -15,8 +15,13 @@ message RegistryReq{
 
 }
 
-message RegistryRes{
+message RegistryResData {
   int64 TxID = 1;
+}
+message RegistryRes{
+  int32 code = 1;
+  string msg = 2;
+  RegistryResData data = 3;
 }
 
 message AddEndpointReq{
