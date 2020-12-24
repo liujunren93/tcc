@@ -13,8 +13,8 @@ import  "tcc/proto/tcc.proto";
 //  map<string, string> data = 3;
 //}
 service server2Tcc{
-  rpc Try(tccReq)returns(tccRes);
-  rpc Cancel(tccReq)returns(tccRes);
-  rpc Confirm(tccReq)returns(tccRes);
+  rpc Try(tcc.tccReq)returns(tcc.tccRes);
+  rpc Cancel(tcc.tccReq)returns(tcc.tccRes);
+  rpc Confirm(tcc.tccReq)returns(tcc.tccRes);
 }
 

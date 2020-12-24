@@ -1,0 +1,13 @@
+syntax = "proto3";
+package proto;
+option go_package = ".;proto";
+import  "tcc/proto/tcc.proto";
+
+
+
+service server1Tcc{
+  rpc Try(tcc.tccReq)returns(tcc.tccRes);
+  rpc Cancel(tcc.tccReq)returns(tcc.tccRes);
+  rpc Confirm(tcc.tccReq)returns(tcc.tccRes);
+}
+

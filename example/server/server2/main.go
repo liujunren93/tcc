@@ -8,7 +8,7 @@ import (
 	"github.com/liujunren93/share/server"
 	proto1 "github.com/liujunren93/tcc/proto"
 
-	"github.com/liujunren93/tcc/test/proto"
+	"github.com/liujunren93/tcc/example/proto"
 	"google.golang.org/grpc"
 )
 
@@ -27,18 +27,17 @@ type  server1 struct {
 }
 
 func (s server1) Try(ctx context.Context, req *proto1.TccReq) (*proto1.TccRes, error) {
-	fmt.Println("server2")
+	fmt.Println("server2",req.Data)
 	return &proto1.TccRes{Code: 200}, nil
 }
 
 func (s server1) Cancel(ctx context.Context, req *proto1.TccReq) (*proto1.TccRes, error) {
 	fmt.Println("Cancel2")
-	return &proto1.TccRes{Code: 300,Msg: "server2"}, nil
+	return &proto1.TccRes{Code: 200,Msg: "server2"}, nil
 }
 
 func (s server1) Confirm(ctx context.Context, req *proto1.TccReq) (*proto1.TccRes, error) {
-	fmt.Println("Confirm2")
-	return nil, nil
+	return &proto1.TccRes{Code: 200, Msg: "server1"}, nil
 }
 
 

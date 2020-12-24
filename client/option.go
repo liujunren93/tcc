@@ -14,14 +14,16 @@ type options struct {
 	GrpcClient *grpc.ClientConn
 	TccServer  *grpc.ClientConn
 	ServerName string
-	Ctx        context.Context
-	Logger     *logrus.Logger
+
+	Ctx    context.Context
+	Logger *logrus.Logger
 }
 
-var DefaultOptions =options{
-	Ctx:        context.TODO(),
-	Logger:     logrus.New(),
+var DefaultOptions = options{
+	Ctx:    context.TODO(),
+	Logger: logrus.New(),
 }
+
 //WithDB 设置数据库
 func WithDB(db *gorm.DB) option {
 
@@ -33,13 +35,6 @@ func WithDB(db *gorm.DB) option {
 func WithLogger(log *logrus.Logger) option {
 	return func(opt *options) {
 		opt.Logger = log
-	}
-}
-
-//WithServerName 服务名
-func WithServerName(ServerName string) option {
-	return func(opt *options) {
-		opt.ServerName = ServerName
 	}
 }
 
@@ -58,18 +53,20 @@ func (p paramData) String() string {
 	return string(marshal)
 }
 
+//tccOption 发起tcc请求数据
 type tccOption struct {
-	serverName string
-	tcc        tcc.Tcc
-	paramData  paramData
-	ctx        context.Context
+	endpoint  string
+	tcc       tcc.Tcc
+	paramData paramData
+	//ctx       context.Context
 }
 
-func NewTccOption(tcc tcc.Tcc, serverName string, ParamData map[string]string, ctx context.Context) tccOption {
+//NewTccOption
+func NewTccOption(tcc tcc.Tcc, endpoint string, paramData map[string]string) tccOption {
 	return tccOption{
-		serverName: serverName,
-		tcc:        tcc,
-		paramData:  ParamData,
-		ctx:        ctx,
+		endpoint:  endpoint,
+		tcc:       tcc,
+		paramData: paramData,
+		//ctx:       ctx,
 	}
 }

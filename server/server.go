@@ -1,8 +1,12 @@
 package server
 
 import (
+	"errors"
+	"github.com/liujunren93/tcc/proto"
 	"github.com/liujunren93/tcc/server/model"
 	"gorm.io/gorm"
+	"strconv"
+	"sync"
 	"time"
 )
 
@@ -10,11 +14,13 @@ type TransactionManage struct {
 	option options
 }
 
+var initMigrateSyncOne sync.Once
+
 type option func(*options)
 
 var transactionManage *TransactionManage
 
-func NewTransaction(opts ...option) (*TransactionManage, error) {
+func NewTransaction(opts ...option) (t *TransactionManage, err error) {
 	if transactionManage != nil {
 		return transactionManage, nil
 	}
@@ -22,11 +28,15 @@ func NewTransaction(opts ...option) (*TransactionManage, error) {
 	for _, opt := range opts {
 		opt(&defaultManage.option)
 	}
-	err := initMigrate(defaultManage.option.DB)
+	initMigrateSyncOne.Do(func() {
+		err = initMigrate(defaultManage.option.DB)
+
+	})
 	return &defaultManage, err
 }
 
 func initMigrate(db *gorm.DB) error {
+
 	models := []interface{}{
 		&model.Endpoint{},
 		&model.Transaction{},
@@ -42,21 +52,97 @@ func (t *TransactionManage) Registry() (uint, error) {
 	return data.ID, err
 }
 
-//LogTry 记录try
-func (t *TransactionManage) LogTry(endpointList []*model.Endpoint) error {
+//Log
+// 记录节点事务
+func (t *TransactionManage) Log(endpoint []*proto.LogActionData) error {
+	tx := t.option.DB
+	endpointList, transaction := logActionData2Model(endpoint)
+	for _, m := range endpointList {
+		var tmp model.Endpoint
+		 tx.Where("tx_id=? and endpoint_tx_id=? and level<?", m.TxID, m.EndpointTxID, m.Level).First(&tmp)
+		if tmp.ID != 0 {
+			err := tx.Where("id=?", tmp.ID).Model(&model.Endpoint{}).Updates(m).Error
+			if err != nil {
+				return err
+			}
+		} else {
+			err := tx.Model(&model.Endpoint{}).Create(m).Error
+			if err != nil {
+				return err
+			}
+		}
 
-	return t.option.DB.Create(&endpointList).Error
+	}
+	err := tx.Where("id=?", transaction.ID).Updates(&transaction).Error
+	return err
+
 }
 
-//LogCancel  记录Cancel
-func (t *TransactionManage) LogCancel(endpointList []*model.Endpoint) error {
-
-	return t.option.DB.Updates(&endpointList).Error
+//LogActionData2Model
+func logActionData2Model(logList []*proto.LogActionData) (endpointList []*model.Endpoint, transaction *model.Transaction) {
+	var t model.Transaction
+	for _, log := range logList {
+		endpoint := model.Endpoint{
+			TxID:         uint(log.TxID),
+			EndpointTxID: uint(log.EndpointTxID),
+			Endpoint:     log.EndpointName,
+			Level:        int(log.Level),
+			Status:       int(log.Status),
+		}
+		t.Level = endpoint.Level
+		if endpoint.Status >= t.Status {
+			t.Status = endpoint.Status
+		}
+		t.ID = endpoint.TxID
+		endpointList = append(endpointList, &endpoint)
+	}
+	return endpointList, &t
 }
 
-//LogConfirm 记录Confirm
-func (t *TransactionManage) LogConfirm(endpointList []*model.Endpoint) error {
-	return t.option.DB.Updates(&endpointList).Error
+//map2Endpoint
+//level 全局执行进度
+//status 全局执行状态
+func map2Endpoint1(list []map[string]string) (endpointList []*model.Endpoint, transaction *model.Transaction, err error) {
+	var res []*model.Endpoint
+	var t model.Transaction
+	for _, m := range list {
+		var endpoint model.Endpoint
+		if val, ok := m["tx_id"]; ok {
+			txID, _ := strconv.Atoi(val)
+			endpoint.TxID = uint(txID)
+		} else {
+			return nil, nil, errors.New("tx_id can not be empty")
+		}
+		if val, ok := m["endpoint_tx_id"]; ok {
+			endpointTxId, _ := strconv.Atoi(val)
+			endpoint.EndpointTxID = uint(endpointTxId)
+		} else {
+			return nil, nil, errors.New("endpoint_tx_id can not be empty")
+		}
+		if val, ok := m["status"]; ok {
+			status, _ := strconv.Atoi(val)
+			endpoint.Status = status
+		}
+		if val, ok := m["level"]; ok {
+			level, _ := strconv.Atoi(val)
+			endpoint.Level = level
+		}
+		if val, ok := m["pk"]; ok {
+			pk, _ := strconv.Atoi(val)
+			endpoint.ID = uint(pk)
+		}
+		if val, ok := m["param_data"]; ok {
+			endpoint.ParamData = val
+		}
+		t.Level = endpoint.Level
+		if endpoint.Status >= t.Status {
+			t.Status = endpoint.Status
+		}
+		t.ID = endpoint.TxID
+		res = append(res, &endpoint)
+	}
+
+	return res, &t, nil
 }
 
 //ListTransaction
@@ -71,5 +157,3 @@ func (t *TransactionManage) ListTransaction(status, page, pageSize int) (list []
 	db.Limit(pageSize).Offset(pageSize * page).Find(&list)
 	return
 }
-
-

@@ -1,14 +1,6 @@
-package main
+package db
 
 import (
-	"context"
-	"fmt"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/liujunren93/share/client"
-	"github.com/liujunren93/share/registry"
-	"github.com/liujunren93/share/registry/etcd"
-	client2 "github.com/liujunren93/tcc/client"
-	"github.com/liujunren93/tcc/test/proto"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -16,35 +8,6 @@ import (
 	"os"
 	"time"
 )
-
-func main() {
-	var err error
-	defer func() {
-		fmt.Println(err)
-	}()
-	newClient := client.NewClient()
-	newRegistry := etcd.NewRegistry()
-	newRegistry.Init(registry.WithAddrs("127.0.0.1:2379"))
-	newClient.Init(client.WithRegistry(newRegistry))
-	registryServer, err := newClient.Client("tcc.registry")
-	registryconn, err := registryServer()
-	if err != nil {
-		panic(err)
-	}
-	tccClient, err := client2.NewTccClient(client2.WithGrpcClient(registryconn), client2.WithDB(DB()))
-	server1, err := newClient.Client("tcc.server1")
-	conn, err := server1()
-	server2, err := newClient.Client("tcc.server2")
-	conn2, err := server2()
-	server1TccClient := proto.NewServer1TccClient(conn)
-	server2TccClient := proto.NewServer2TccClient(conn2)
-
-	err = tccClient.Try(
-		client2.NewTccOption(server2TccClient, "test.server2", map[string]string{"aaa": "bbb"}, context.TODO()),
-		client2.NewTccOption(server1TccClient, "test.server1", map[string]string{"aaa": "bbb"}, context.TODO()),
-	)
-	fmt.Println(err)
-}
 
 func DB() *gorm.DB {
 	my := "root:root@tcp(127.0.0.1:3306)/tcc?charset=utf8mb4&parseTime=True&loc=Local"

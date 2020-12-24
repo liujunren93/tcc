@@ -4,31 +4,41 @@ option go_package = "github.com/liujunren93/tcc/proto;proto";
 
 
 service TccServer{
-  rpc Try(tccReq)returns(tccRes);
-  rpc Cancel(tccReq)returns(tccRes);
-  rpc Confirm(tccReq)returns(tccRes);
-  rpc Registry(RegistryReq)returns(RegistryRes);
-  rpc AddEndpoint(AddEndpointReq)returns(tccRes);
+  rpc Registry(empty)returns(registryRes);
+  rpc LogAction(logActionReq)returns(tccRes);
 }
 
-message RegistryReq{
+
+message empty{
 
 }
 
-message RegistryResData {
+message registryResData {
   int64 TxID = 1;
 }
-message RegistryRes{
+message registryRes{
   int32 code = 1;
   string msg = 2;
-  RegistryResData data = 3;
+  registryResData data = 3;
 }
 
-message AddEndpointReq{
-  int64   TxID = 1;
-  int64   EndpointTxID = 2;
-  string  ParamData = 3;
+message logActionData{
+  int64  pk = 1;
+  int64  txID = 2;
+  int64  endpointTxID = 3;
+  string endpointName = 4;
+  int64  level = 5;
+  int64  status = 6;
+
 }
+message logActionReq{
+  repeated logActionData data = 1;
+}
+//message logActionRes{
+//  int32 code = 1;
+//  string msg = 2;
+//  repeated logActionData data = 3;
+//}
 
 message tccReq{
   map<string, string> data = 1;
