@@ -179,7 +179,7 @@ func (c *client) Cancel(ctx context.Context) error {
 
 //serverRegistry 在事务中心注册获取主事务id
 func serverRegistry(c *client) error {
-	tccClient := proto.NewTccServerClient(c.option.GrpcClient)
+	tccClient := proto.NewTccServerClient(c.option.TccCenter)
 	ctx := c.option.Ctx
 	if c.option.Ctx == nil {
 		ctx = context.TODO()
@@ -197,7 +197,7 @@ func serverRegistry(c *client) error {
 
 //tccServerLog 将信息提交的中心服务器
 func (c *client) tccServerLog(data ...*proto.LogActionData) error {
-	tccClient := proto.NewTccServerClient(c.option.GrpcClient)
+	tccClient := proto.NewTccServerClient(c.option.TccCenter)
 	ctx := c.option.Ctx
 	if c.option.Ctx == nil {
 		ctx = context.TODO()
