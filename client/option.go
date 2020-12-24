@@ -9,40 +9,12 @@ import (
 	"gorm.io/gorm"
 )
 
-type options struct {
+type Config struct {
 	DB         *gorm.DB
-	GrpcClient *grpc.ClientConn
-	TccServer  *grpc.ClientConn
-	ServerName string
-
-	Ctx    context.Context
-	Logger *logrus.Logger
-}
-
-var DefaultOptions = options{
-	Ctx:    context.TODO(),
-	Logger: logrus.New(),
-}
-
-//WithDB 设置数据库
-func WithDB(db *gorm.DB) option {
-
-	return func(opt *options) {
-		opt.DB = db
-	}
-}
-
-func WithLogger(log *logrus.Logger) option {
-	return func(opt *options) {
-		opt.Logger = log
-	}
-}
-
-//WithGrpcClient  设置grpc client
-func WithGrpcClient(client *grpc.ClientConn) option {
-	return func(opt *options) {
-		opt.GrpcClient = client
-	}
+	TccCenter  *grpc.ClientConn
+	ClientName string
+	Ctx        context.Context
+	Logger     *logrus.Logger
 }
 
 //paramData 数据

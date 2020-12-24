@@ -31,24 +31,24 @@ func init() {
 func initClient() {
 	thisClient = sclient.NewClient()
 	r := etcd.NewRegistry()
-
 	r.Init(registry.WithAddrs("127.0.0.1:2379"))
 	thisClient.Init(sclient.WithRegistry(r))
 }
 
-
-
 func main() {
-	//source := rand.NewSource(time.Now().UnixNano())
-
 	buy()
 }
 
 func buy() error {
-
 	var err error
 	server := getCentServer()
-	tccClient, err := client.NewTccClient(client.WithGrpcClient(server),client.WithDB(db.DB()))
+	tccClient, err := client.NewTccClient(client.Config{
+		DB:         db.DB(),
+		GrpcClient: server,
+		ClientName: "test",
+		Ctx:        nil,
+		Logger:     nil,
+	})
 	if err != nil {
 		panic(err)
 	}
@@ -61,10 +61,8 @@ func buy() error {
 	}()
 	try, err := tccClient.Try(client.NewTccOption(getClientServer1(), "client1", map1), context.TODO())
 	if err != nil {
-		panic(err)
 		return err
 	}
-
 	map2["hh"] = try.Data["hh"]
 	res, err := tccClient.Try(client.NewTccOption(getClientServer2(), "client2", map2), context.TODO())
 	if err != nil {
@@ -88,7 +86,6 @@ func getClientServer1() proto.Server1TccClient {
 		return nil
 	}
 	conn, err := next()
-	// 获取grpc client
 	return proto.NewServer1TccClient(conn)
 }
 func getClientServer2() proto.Server1TccClient {
@@ -100,5 +97,3 @@ func getClientServer2() proto.Server1TccClient {
 	// 获取grpc client
 	return proto.NewServer2TccClient(conn)
 }
-
-

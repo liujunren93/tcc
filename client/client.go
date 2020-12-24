@@ -12,7 +12,7 @@ import (
 )
 
 type client struct {
-	option  options
+	option  Config
 	conf    Conf
 	txID    uint
 	tccList []*tccOption
@@ -21,28 +21,26 @@ type Conf struct {
 	Logger *logrus.Logger
 }
 
-type option func(options *options)
-
 var syncOnce sync.Once
 
 //NewTccClient 初始化tcc
-func NewTccClient(opts ...option) (*client, error) {
+//func NewTccClient(Config) (*client, error) {
+func NewTccClient(conf Config) (*client, error) {
 	var cli client
-	cli.option = DefaultOptions
-
-	for _, opt := range opts {
-		opt(&cli.option)
+	if conf.Ctx == nil {
+		conf.Ctx = context.TODO()
 	}
-
+	if conf.Logger == nil {
+		conf.Logger = logrus.New()
+	}
+	cli.option = conf
 	if cli.option.DB == nil {
 		return nil, errors.New("DB must be set")
 	}
 	syncOnce.Do(func() {
 		initMigrate(cli.option.DB)
 	})
-
 	err := serverRegistry(&cli)
-
 	if err != nil {
 		cli.option.Logger.Error(err)
 		return nil, err
@@ -52,7 +50,6 @@ func NewTccClient(opts ...option) (*client, error) {
 
 //initMigrate 初始化数据
 func initMigrate(db *gorm.DB) {
-
 	models := []interface{}{
 		&model.Action{},
 	}
@@ -60,7 +57,6 @@ func initMigrate(db *gorm.DB) {
 	if err != nil {
 		panic(err)
 	}
-
 }
 
 //Try
@@ -90,7 +86,6 @@ func (c *client) Try(endpoint tccOption, ctx context.Context) (res *proto.TccRes
 		if err != nil {
 			c.option.Logger.Error(err2)
 		}
-
 	}()
 	if err != nil {
 		return res, err
@@ -172,7 +167,6 @@ func (c *client) Cancel(ctx context.Context) error {
 		})
 		endpointTxId, _ := strconv.Atoi(t.paramData["endpoint_tx_id"])
 		log = append(log, &proto.LogActionData{
-
 			TxID:         int64(c.txID),
 			EndpointTxID: int64(endpointTxId),
 			Level:        2,
@@ -203,19 +197,16 @@ func serverRegistry(c *client) error {
 
 //tccServerLog 将信息提交的中心服务器
 func (c *client) tccServerLog(data ...*proto.LogActionData) error {
-
 	tccClient := proto.NewTccServerClient(c.option.GrpcClient)
 	ctx := c.option.Ctx
 	if c.option.Ctx == nil {
 		ctx = context.TODO()
 	}
-
 	res, err := tccClient.LogAction(ctx, &proto.LogActionReq{Data: data})
 	if err != nil {
 		return err
 	}
 	if res.Code != 200 {
-		//panic(111)
 		return errors.New(res.Msg)
 	}
 
