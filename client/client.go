@@ -3,7 +3,7 @@ package client
 import (
 	"context"
 	"errors"
-	"github.com/liujunren93/tcc/client/model"
+	"github.com/liujunren93/tcc/model"
 	"github.com/liujunren93/tcc/proto"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"

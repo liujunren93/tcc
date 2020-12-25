@@ -2,6 +2,7 @@ package model
 
 import "gorm.io/gorm"
 
+//Action 客户端记录事务信息
 type Action struct {
 	gorm.Model
 	TxID       uint   `gorm:"tx_id;type:int;not null;default:0;comment:'主事务id'"`
