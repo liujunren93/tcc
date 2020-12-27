@@ -48,8 +48,9 @@ func (t *TransactionManage) Registry() (uint, error) {
 
 //Log
 // 记录节点事务
-func (t *TransactionManage) Log(endpoint []*proto.LogActionData) error {
-	tx := t.DB
+func (t *TransactionManage) Log(db **gorm.DB, endpoint []*proto.LogActionData) error {
+	tx := *db
+
 	endpointList, transaction := logActionData2Model(endpoint)
 	for _, m := range endpointList {
 		var tmp model.Endpoint
