@@ -1,8 +1,8 @@
 package server
 
 import (
-	"github.com/liujunren93/tcc/proto"
 	"github.com/liujunren93/tcc/model"
+	"github.com/liujunren93/tcc/proto"
 	"gorm.io/gorm"
 	"sync"
 	"time"

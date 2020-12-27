@@ -15,7 +15,7 @@ import (
 var t *server2.TransactionManage
 
 func main() {
-	t, _ = server2.NewTransaction(server2.WithDB(db.DB()))
+	t, _ = server2.NewTransaction(db.DB())
 	newRegistry := etcd.NewRegistry()
 	newRegistry.Init(registry.WithAddrs("127.0.0.1:2379"))
 	grpcServer := server.NewGrpcServer(server.WithName("tcc.registry"))
