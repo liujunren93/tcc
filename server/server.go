@@ -20,7 +20,7 @@ func NewTransaction(db *gorm.DB) (t *TransactionManage, err error) {
 	if transactionManage != nil {
 		return transactionManage, nil
 	}
-
+	transactionManage=new(TransactionManage)
 	transactionManage.DB = db
 	initMigrateSyncOne.Do(func() {
 		err = initMigrate(transactionManage.DB)
