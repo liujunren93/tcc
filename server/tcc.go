@@ -8,19 +8,19 @@ import (
 	"time"
 )
 
-type TransactionManage struct {
+type TccManage struct {
 	DB *gorm.DB
 }
 
 var initMigrateSyncOne sync.Once
 
-var transactionManage *TransactionManage
+var transactionManage *TccManage
 
-func NewTransaction(db *gorm.DB) (t *TransactionManage, err error) {
+func NewTccServer(db *gorm.DB) (t *TccManage, err error) {
 	if transactionManage != nil {
 		return transactionManage, nil
 	}
-	transactionManage=new(TransactionManage)
+	transactionManage=new(TccManage)
 	transactionManage.DB = db
 	initMigrateSyncOne.Do(func() {
 		err = initMigrate(transactionManage.DB)
@@ -39,7 +39,7 @@ func initMigrate(db *gorm.DB) error {
 }
 
 //Registry 注册事务获取事务id
-func (t *TransactionManage) Registry() (uint, error) {
+func (t *TccManage) Registry() (uint, error) {
 	var data model.Transaction
 	data.BeginTime = time.Now().Local().Unix()
 	err := t.DB.Create(&data).Error
@@ -48,7 +48,7 @@ func (t *TransactionManage) Registry() (uint, error) {
 
 //Log
 // 记录节点事务
-func (t *TransactionManage) Log(db **gorm.DB, endpoint []*proto.LogActionData) error {
+func (t *TccManage) Log(db **gorm.DB, endpoint []*proto.LogActionData) error {
 	tx := *db
 
 	endpointList, transaction := logActionData2Model(endpoint)
@@ -97,7 +97,7 @@ func logActionData2Model(logList []*proto.LogActionData) (endpointList []*model.
 //ListTransaction
 // 事务列表
 //0：待处理（默认），1：提交成功，2：提交失败（需要继续提交），3：回滚成功，4：回滚失败（需要继续回滚），5：人工干预
-func (t *TransactionManage) ListTransaction(status, page, pageSize int) (list []*model.Transaction, total int64) {
+func (t *TccManage) ListTransaction(status, page, pageSize int) (list []*model.Transaction, total int64) {
 	db := t.DB
 	if status != 0 {
 		db = db.Where("status=?", status)
