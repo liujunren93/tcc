@@ -11,7 +11,7 @@ import (
 	"sync"
 )
 
-type client struct {
+type Client struct {
 	option  Config
 	conf    Conf
 	txID    uint
@@ -24,9 +24,9 @@ type Conf struct {
 var syncOnce sync.Once
 
 //NewTccClient 初始化tcc
-//func NewTccClient(Config) (*client, error) {
-func NewTccClient(conf Config) (*client, error) {
-	var cli client
+//func NewTccClient(Config) (*Client, error) {
+func NewTccClient(conf Config) (*Client, error) {
+	var cli Client
 	if conf.Ctx == nil {
 		conf.Ctx = context.TODO()
 	}
@@ -60,7 +60,7 @@ func initMigrate(db *gorm.DB) {
 }
 
 //Try
-func (c *client) Try(endpoint tccOption, ctx context.Context) (res *proto.TccRes, err error) {
+func (c *Client) Try(endpoint tccOption, ctx context.Context) (res *proto.TccRes, err error) {
 	action := model.Action{
 		TxID:      c.txID,
 		Endpoint:  endpoint.endpoint,
@@ -96,7 +96,7 @@ func (c *client) Try(endpoint tccOption, ctx context.Context) (res *proto.TccRes
 }
 
 //Confirm 提交
-func (c *client) Confirm(ctx context.Context) (err error) {
+func (c *Client) Confirm(ctx context.Context) (err error) {
 	retryCount := 0
 	status := 0
 	var log []*proto.LogActionData
@@ -140,7 +140,7 @@ func (c *client) Confirm(ctx context.Context) (err error) {
 }
 
 //Cancel 回滚
-func (c *client) Cancel(ctx context.Context) error {
+func (c *Client) Cancel(ctx context.Context) error {
 	retryCount := 0
 	status := 0
 	var log []*proto.LogActionData
@@ -178,7 +178,7 @@ func (c *client) Cancel(ctx context.Context) error {
 }
 
 //serverRegistry 在事务中心注册获取主事务id
-func serverRegistry(c *client) error {
+func serverRegistry(c *Client) error {
 	tccClient := proto.NewTccServerClient(c.option.TccCenter)
 	ctx := c.option.Ctx
 	if c.option.Ctx == nil {
@@ -196,7 +196,7 @@ func serverRegistry(c *client) error {
 }
 
 //tccServerLog 将信息提交的中心服务器
-func (c *client) tccServerLog(data ...*proto.LogActionData) error {
+func (c *Client) tccServerLog(data ...*proto.LogActionData) error {
 	tccClient := proto.NewTccServerClient(c.option.TccCenter)
 	ctx := c.option.Ctx
 	if c.option.Ctx == nil {

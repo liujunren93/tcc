@@ -44,7 +44,7 @@ func buy() error {
 	server := getCentServer()
 	tccClient, err := client.NewTccClient(client.Config{
 		DB:         db.DB(),
-		GrpcClient: server,
+		TccCenter: server,
 		ClientName: "test",
 		Ctx:        nil,
 		Logger:     nil,
